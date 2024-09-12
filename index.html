@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ciper Fashion</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <h1>Ciper Fashion</h1>
+        <nav>
+            <ul>
+                <li><a href="#" onclick="showSection('products')">Home</a></li>
+                <li><a href="#" onclick="showSection('cart')">Cart</a></li>
+                <li><a href="#" onclick="showSection('profile')">Profile</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section id="products" class="section">
+        <!-- Products will be dynamically inserted here -->
+    </section>
+
+    <section id="cart" class="section">
+        <h2>Your Cart</h2>
+        <div id="cartItems"></div>
+        <p id="cartMessage"></p>
+        <button class="checkout-btn" onclick="showSection('orderForm')">Checkout</button>
+        <p id="cartTotal"></p>
+    </section>
+
+    <section id="orderForm" class="section">
+        <h2>Enter your details</h2>
+        <label for="name">Name:</label><br>
+        <input type="text" id="name" placeholder="Your Name"><br><br>
+        <label for="address">Address:</label><br>
+        <textarea id="address" placeholder="Your Address"></textarea><br><br>
+        <button class="order-btn" onclick="placeOrder()">Place Order</button>
+    </section>
+
+    <section id="receipt" class="section">
+        <h2>Order Receipt</h2>
+        <p id="receiptName"></p>
+        <p id="receiptAddress"></p>
+        <p id="receiptItems"></p>
+        <p id="totalItems"></p>
+        <p id="totalCost"></p>
+    </section>
+
+    <section id="profile" class="section">
+        <h2>User Profile</h2>
+        <label for="profileName">Name:</label><br>
+        <input type="text" id="profileName" placeholder="Enter your name"><br><br>
+        <label for="profileAddress">Address:</label><br>
+        <textarea id="profileAddress" placeholder="Enter your address"></textarea><br><br>
+        <button class="edit-btn" onclick="saveProfile()">Save</button>
+    </section>
+
+    <script>
+        let cart = [];
+        let likedItems = new Set();
+        let userProfile = {
+            name: '',
+            address: ''
+        };
+
+        function generateProducts() {
+            const productsContainer = document.getElementById('products');
+            for (let i = 1; i <= 100; i++) {
+                let price = Math.floor(Math.random() * 500) + 100; // Random price between 100 and 600
+                let imageNumber = (i % 3) + 1; // Use images cloth1.jpg, cloth2.jpg, cloth3.jpg repeatedly
+                productsContainer.innerHTML += `
+                    <div class="product">
+                        <img src="images/cloth${imageNumber}.jpg" alt="Cloth ${i}">
+                        <h3>Cloth ${i}</h3>
+                        <p class="price">₹${price}</p>
+                        <button onclick="addToCart('Cloth ${i}', ${price})">Add to Cart</button>
+                        <button class="like-btn" onclick="toggleLike('Cloth ${i}')">${likedItems.has(`Cloth ${i}`) ? 'Unlike' : 'Like'}</button>
+                    </div>`;
+            }
+        }
+
+        function addToCart(product, price) {
+            cart.unshift({ product, price });
+            displayCart();
+            alert(`${product} has been added to your cart!`);
+        }
+
+        function displayCart() {
+            const cartItemsDiv = document.getElementById('cartItems');
+            cartItemsDiv.innerHTML = '';
+            let total = 0;
+            cart.forEach((item) => {
+                total += item.price;
+                cartItemsDiv.innerHTML += `<div class="cart-item">${item.product} - ₹${item.price}</div>`;
+            });
+            if (cart.length === 0) {
+                document.getElementById('cartMessage').innerText = 'Please select items';
+            } else {
+                document.getElementById('cartMessage').innerText = '';
+            }
+            document.getElementById('cartTotal').innerText = `Total: ₹${total}`;
+        }
+
+        function toggleLike(product) {
+            if (likedItems.has(product)) {
+                likedItems.delete(product);
+                alert(`${product} removed from liked items.`);
+            } else {
+                likedItems.add(product);
+                alert(`${product} added to liked items.`);
+            }
+            generateProducts(); // Re-render products to update like button states
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.style.display = 'none';
+            });
+            document.getElementById(sectionId).style.display = 'block';
+            if (sectionId === 'products') {
+                generateProducts(); // Generate products when on the home page
+            }
+        }
+
+        function saveProfile() {
+            userProfile.name = document.getElementById('profileName').value;
+            userProfile.address = document.getElementById('profileAddress').value;
+            alert('Profile updated successfully.');
+        }
+
+        function placeOrder() {
+            const name = document.getElementById('name').value || userProfile.name;
+            const address = document.getElementById('address').value || userProfile.address;
+
+            if (name === '' || address === '') {
+                alert('Please enter your name and address.');
+                return;
+            }
+
+            const receiptDiv = document.getElementById('receipt');
+            document.getElementById('receiptName').innerText = `Name: ${name}`;
+            document.getElementById('receiptAddress').innerText = `Address: ${address}`;
+            
+            let itemsList = 'Items:\n';
+            let total = 0;
+            cart.forEach(item => {
+                itemsList += `${item.product} - ₹${item.price}\n`;
+                total += item.price;
+            });
+            document.getElementById('receiptItems').innerText = itemsList;
+            document.getElementById('totalItems').innerText = `Total Items: ${cart.length}`;
+            document.getElementById('totalCost').innerText = `Total Cost: ₹${total}`;
+
+            receiptDiv.style.display = 'block';
+            document.getElementById('orderForm').style.display = 'none';
+            cart = [];
+            displayCart();
+        }
+
+        window.onload = () => {
+            showSection('products');
+        };
+    </script>
+</body>
+</html>
